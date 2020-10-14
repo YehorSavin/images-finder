@@ -1,47 +1,67 @@
-import apiService from "../js/apiService";
-import markupTempl from "../templates/markup.hbs";
-import { refs } from "../js/elements";
+import refs from "./refs";
+import apiService from "./apiService";
+import template from "../template/template.hbs";
 import debounce from "lodash.debounce";
-import modal from './modal';
-console.log(refs);
+// import * as basicLightbox from "basiclightbox";
+// import "../../node_modules/basiclightbox/dist/basicLightbox.css";
+import "@babel/polyfill"
 
-function RenderItems(data) {
-  const items = markupTempl(data);
-  refs.list.insertAdjacentHTML("beforeend", items);
-  if (refs.list.children) {
-    // refs.body.insertAdjacentElement("beforeend", refs.btnLoad);
-    refs.btnLoad.classList.add("is-open");
-  } else {
-    refs.btnLoad.classList.remove("is-open");
+refs.galleryList.addEventListener(`click`, (event) => {
+  if (event.target.nodeName === "IMG") {
+    let targetImgSrc = event.target.dataset.source;
+    const instance = basicLightbox.create(`
+        <div class="modal">
+        <button class="js-modal-btn"></button>
+            <img src="${targetImgSrc}">
+        </div>
+    `);
+
+    instance.show();
   }
-}
-refs.form.addEventListener(
+
+  let ModalImg = document.querySelector(".js-modal-img");
+});
+
+refs.input.addEventListener(
   "input",
   debounce((event) => {
     event.preventDefault;
     apiService.query = event.target.value;
     renderApi();
     refs.input.value = "";
-    refs.list.innerHTML = "";
+    refs.galleryList.innerHTML = "";
   }, 500),
 );
+
 function renderApi() {
-  apiService.fetchImages().then(({ hits }) => RenderItems(hits));
+  apiService.fetchImages().then(({ hits }) => renderImages(hits));
 }
-refs.btnLoad.addEventListener("click", () => {
+const loadMoreBtn = document.createElement(`button`);
+loadMoreBtn.textContent = "Load more...";
+loadMoreBtn.classList.add("loadmore-button");
+
+function renderImages(data) {
+  const items = template(data);
+  refs.galleryList.insertAdjacentHTML("beforeend", items);
+
+  if (refs.galleryList.children.length > 0) {
+    refs.body.insertAdjacentElement("beforeend", loadMoreBtn);
+    loadMoreBtn.classList.remove("hiden");
+  } else {
+    loadMoreBtn.classList.add("hidden");
+  }
+}
+
+loadMoreBtn.addEventListener(`click`, loadMore);
+
+function loadMore() {
   apiService.setPage();
-  renderApi();
-  console.dir(window)
-  window.scrollTo({
-    top: document.documentElement.offsetHeight,
-    behavior: "smooth"
-});
-});
-
-function loadMore(){
-  let currentStart = document.documentElement.offsetHeight;
-  apiService.setPage()
-  apiService.fetchImages().then(({hits}) => RenderImages (hits))
-  window.scrollTo(100, 0)
+  apiService.fetchImages().then(({ hits }) => renderImages(hits));
+  console.log(document.documentElement.offsetHeight);
+  setTimeout(() => {
+    window.scrollTo({
+      top: document.documentElement.offsetHeight - 1900,
+      behavior: "smooth",
+    });
+  }, 500);
 }
-

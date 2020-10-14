@@ -1,6 +1,6 @@
 export default {
-  body: document.querySelector('body'),
-  from: document.getAnimations('search-form'),
-  input: document.getElementById('query'),
-  galleryList: document.querySelector('gallery')
+  body: document.querySelector(`body`),
+  form: document.querySelector(`.search-form`),
+  input: document.querySelector(`input`),
+  galleryList: document.querySelector(`.gallery`),
 }

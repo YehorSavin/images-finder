@@ -1,4 +1,5 @@
 import css from "./css/style.css";
 
-import './js/renderApi.js';
+import renderApi from "./js/renderApi";
+
 
